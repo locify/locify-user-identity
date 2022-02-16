@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "serviceConfiguration": {
+    "apiName": "locifyidentity",
+    "serviceName": "AppSync",
+    "gqlSchemaPath": "/home/eugen/jetBrains/webStormProjects/vite/locify-identity/amplify/backend/api/locifyidentity/schema.graphql",
+    "defaultAuthType": {
+      "mode": "API_KEY",
+      "expirationTime": 7
+    }
+  }
+}
