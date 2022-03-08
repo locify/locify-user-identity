@@ -20,3 +20,7 @@ Libraries:
 [Ceramic Self.ID application](https://developers.ceramic.network/tools/self-id/overview/#sdk)
 
 Self.ID is a SDK for building user-centric Web applications using Ceramic and related decentralized technologies, along with a reference application to show and edit profiles.
+
+## NFT.Storage issue
+[Cant resolve ipfs-car/blockstore/memory when importing nft.storage](https://stackoverflow.com/questions/70063600/cant-resolve-ipfs-car-blockstore-memory-when-importing-nft-storage)
+
