@@ -19,6 +19,8 @@ import { box, randomBytes } from 'tweetnacl'
 import { decodeBase64, encodeBase64, encodeUTF8 } from 'tweetnacl-util'
 import { KeyPairEd25519 } from 'near-api-js/lib/utils'
 import { convertSecretKey } from 'ed2curve'
+import ImageUploading from 'react-images-uploading'
+import { NFTStorage } from 'nft.storage'
 
 const API_URL = 'https://ceramic-clay.3boxlabs.com'
 
@@ -86,6 +88,14 @@ export const Index = () => {
     const [errorState, setErrorState] = useState('')
     const [userId, setUserId] = useState('not set')
     const [did, setDid] = useState('not set')
+    const [images, setImages] = React.useState([])
+    const maxNumber = 69
+
+    const onChange = (imageList, addUpdateIndex) => {
+        // data for submit
+        console.log(imageList, addUpdateIndex)
+        setImages(imageList)
+    }
 
     useEffect(() => {
         const getProfile = async () => {
@@ -311,6 +321,7 @@ export const Index = () => {
                 },
                 tiles: {},
             }
+
             const dataStore = new DIDDataStore({
                 ceramic,
                 model: publishedModel,
@@ -329,6 +340,35 @@ export const Index = () => {
             setIsLoading(false)
         }
     }
+    const endpoint = new URL('https://api.nft.storage')
+    const token = 'API Token'
+
+    const mintNft = async (index: number) => {
+        try {
+            const fileInfo = images[index].file
+            const storage = new NFTStorage({ endpoint, token })
+            const cid = await storage.storeBlob(new Blob([fileInfo]))
+            console.info('cid', { cid })
+            const status = await storage.status(cid)
+            console.info('status', status)
+            if (near) {
+                try {
+                    near.mintWalletNft(
+                        fileInfo.name,
+                        'nft title',
+                        'nft description',
+                        cid
+                    )
+                } catch (e) {
+                    console.error('minting error: ', e)
+                }
+            }
+        } catch (e) {
+            console.info('Exception in upload process')
+            console.table(e)
+        }
+    }
+
     return (
         <Box>
             <Box
@@ -428,6 +468,96 @@ export const Index = () => {
                                     <Typography variant={'subtitle1'}>
                                         DID id: {did}
                                     </Typography>
+                                </Grid>
+                                <Grid item xs={12} sx={{ mx: 4 }}>
+                                    <Typography variant={'subtitle1'}>
+                                        Minting NFT:
+                                    </Typography>
+                                    <Box sx={{ my: 4 }}>
+                                        <ImageUploading
+                                            multiple
+                                            value={images}
+                                            onChange={onChange}
+                                            maxNumber={maxNumber}
+                                            dataURLKey="data_url"
+                                        >
+                                            {({
+                                                imageList,
+                                                onImageUpload,
+                                                onImageRemoveAll,
+                                                onImageUpdate,
+                                                onImageRemove,
+                                                isDragging,
+                                                dragProps,
+                                            }) => (
+                                                // write your building UI
+                                                <div className="upload__image-wrapper">
+                                                    <button
+                                                        style={
+                                                            isDragging
+                                                                ? {
+                                                                      color: 'red',
+                                                                  }
+                                                                : undefined
+                                                        }
+                                                        onClick={onImageUpload}
+                                                        {...dragProps}
+                                                    >
+                                                        Click or Drop here
+                                                    </button>
+                                                    &nbsp;
+                                                    <button
+                                                        onClick={
+                                                            onImageRemoveAll
+                                                        }
+                                                    >
+                                                        Remove all images
+                                                    </button>
+                                                    {imageList.map(
+                                                        (image, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="image-item"
+                                                            >
+                                                                <img
+                                                                    src={
+                                                                        image[
+                                                                            'data_url'
+                                                                        ]
+                                                                    }
+                                                                    alt=""
+                                                                    width="100"
+                                                                />
+                                                                <div className="image-item__btn-wrapper">
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            /*onImageUpdate(
+                                                                                index
+                                                                            )*/
+                                                                            await mintNft(
+                                                                                index
+                                                                            )
+                                                                        }}
+                                                                    >
+                                                                        Mint
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            onImageRemove(
+                                                                                index
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        Remove
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    )}
+                                                </div>
+                                            )}
+                                        </ImageUploading>
+                                    </Box>
                                 </Grid>
                             </Grid>
                         </Box>
